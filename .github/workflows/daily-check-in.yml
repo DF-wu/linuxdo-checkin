@@ -41,23 +41,21 @@ jobs:
           WXPUSH_TOKEN: ${{ secrets.WXPUSH_TOKEN }}
           BROWSE_ENABLED: ${{ secrets.BROWSE_ENABLED }}
         run: |
-          # 如果設置了 LINUXDO_ACCOUNTS，使用多帳號循環模式
           if [ -n "$LINUXDO_ACCOUNTS" ]; then
-            echo "檢測到多帳號配置，開始處理..."
+            echo "Multi-account mode detected..."
             IFS=',' read -ra ADDR <<< "$LINUXDO_ACCOUNTS"
             for i in "${ADDR[@]}"; do
               IFS=':' read -ra DETAILS <<< "$i"
               export LINUXDO_USERNAME="${DETAILS[0]}"
               export LINUXDO_PASSWORD="${DETAILS[1]}"
               echo "=========================================="
-              echo "正在為帳號 ${LINUXDO_USERNAME} 執行簽到..."
+              echo "Processing account: ${LINUXDO_USERNAME}"
               echo "=========================================="
-              python main.py
+              python main.py || echo "Account ${LINUXDO_USERNAME} failed, continuing..."
               echo ""
             done
           else
-            # 單帳號模式（向下兼容）
-            echo "使用單帳號模式..."
+            echo "Single account mode..."
             python main.py
           fi
 
